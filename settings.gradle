@@ -1,1 +1,3 @@
 rootProject.name = 'spring-advanced'
+include 'log-tracer'
+
