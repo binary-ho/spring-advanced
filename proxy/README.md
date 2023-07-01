@@ -142,7 +142,6 @@ public class ProxyPatternTest {
    }
 }
 
-
 // 20:48:46.496 [Test worker] INFO hello.proxy.pureproxy.proxy.code.CacheProxy - 프록시 호출
 // 20:48:46.499 [Test worker] INFO hello.proxy.pureproxy.proxy.code.RealSubject - 실제 객체 호출
 
