@@ -25,4 +25,20 @@ public class AdvisorTest {
         proxy.save();
         proxy.find();
     }
+
+    @Test
+    void 직접_만든_포인트컷() {
+        ServiceInterface target = new ServiceImpl();
+        ProxyFactory proxyFactory = new ProxyFactory(target);
+
+        // 항상 적용되는 포인트컷,
+        // 포인트 컷을 지정하지 않고 Advice만 넣으면 알아서 Pointcut.TRUE로 적용된다.
+        Pointcut myPointcut = new MyPointcut();
+        DefaultPointcutAdvisor advisor = new DefaultPointcutAdvisor(myPointcut, new TimeAdvice());
+        proxyFactory.addAdvisor(advisor);
+        ServiceInterface proxy = (ServiceInterface) proxyFactory.getProxy();
+
+        proxy.save();
+        proxy.find();
+    }
 }
