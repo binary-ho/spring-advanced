@@ -5,13 +5,21 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import hello.aop.order.OrderRepository;
 import hello.aop.order.OrderService;
+import hello.aop.order.aop.AspectV5Order;
+import hello.aop.order.aop.AspectV5Order.TransactionAspect;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
 @SpringBootTest
+//@Import(AspectV1.class)
+//@Import(AspectV2.class)
+//@Import(AspectV3.class)
+//@Import(AspectV4WithPointcuts.class)
+@Import({AspectV5Order.LogAspect.class, TransactionAspect.class})
 public class AopTest {
 
     @Autowired
@@ -21,11 +29,16 @@ public class AopTest {
     OrderRepository orderRepository;
 
     @Test
-    void AOP_적용이_안_되었다() {
+    void AOP_적용이_되었다() {
         assertAll(
-            () -> assertThat(AopUtils.isAopProxy(orderService)).isEqualTo(false),
-            () -> assertThat(AopUtils.isAopProxy(orderRepository)).isEqualTo(false)
+            () -> assertThat(AopUtils.isAopProxy(orderService)).isEqualTo(true),
+            () -> assertThat(AopUtils.isAopProxy(orderRepository)).isEqualTo(true)
         );
+    }
+
+    @Test
+    void success() {
+        orderService.orderItem("itemA");
     }
 
     @Test
