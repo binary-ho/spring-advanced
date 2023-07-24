@@ -169,3 +169,75 @@ public class AspectV5Order {
     }
 }
 ```
+
+## 2. 어드바이스의 종류와 적용
+1. `@Around:` 메서드 호출 전후에 수행, 가장 강력한 어드바이스, 조인 포인트 실행 여부 선택, 반환값 변환, 예외 변환 그냥 모든 것이 가능
+2. `@Before` : 조인 포인트 실행 이전에 실행. 작업 흐름을 변경할 수는 없음 이 로직이 끝나면 알아서 원래 로직이 실행됨
+3. `@AfterReturning`: 조인 포인트가 정상 완료후 실행. <br> `returning` 속성으로 결과를 사용할 수 있는데, 만약 `Object`가 아닌 다른 자료형을 사용하면 Return이 해당 자료형이거나 하위 타입인 메서드만 적용된다. 
+4. `@AfterThrowing` : 메서드가 예외를 던지는 경우 실행. `throwing` 옵션으로 Exception 사용 가능
+5. `@After`: 조인포인트가 정상 또는 예외에 관계없이 실행 -> finally 와 같다.
+
+
+사실상 `@Around` 외에는 `@Around`가 할 수 있는 일을 세분화 한 것이다. <br>
+`@Around`를 쓸 때는 `ProceedingJoinPoint`를 써야 하는데, `@Around`를 쓸 때는 직접 `proceed()` 메서드를 호출해서 실행해줘야 한다. <br>
+`@Around`는 기능이 참 많다
+1. 조인 포인트 실행 여부 선택 : `joinPoint.procedd()` 호출 여부 자체를 선택할 수 있음
+2. 조인 포인트 proceed 여러번 실행도 가능
+3. 전달 값을 변환할 수 있음 : `joinPoint.proceed(args[])`
+4. 반환 값을 변환할 수 있음
+5. 예외를 변환할 수 있음
+6. 트랜잭션과 같이 try-catch 처리 가능
+
+
+각 어노테이션은 아래와 같이 사용할 수 있다.
+
+```java
+@Slf4j
+@Aspect
+public class AspectV6Advice {
+
+    @Around("hello.aop.order.aop.Pointcuts.allOrderAndService()")
+    public Object doTransaction(ProceedingJoinPoint joinPoint) throws Throwable {
+
+        try {
+            // @Before
+            log.info("[트랜잭션 시작] {}", joinPoint.getSignature());
+            Object result = joinPoint.proceed();
+
+            // @AfterReturning : proceed 이후
+            log.info("[트랜잭션 커밋] {}", joinPoint.getSignature());
+            return result;
+        } catch (Exception e) {
+
+            // @AfterThrowing
+            log.info("[트랜잭션 롤백] {}", joinPoint.getSignature());
+            throw e;
+        } finally {
+
+            // @After
+            log.info("[리소스 릴리즈] {}", joinPoint.getSignature());
+        }
+    }
+
+    @Before("hello.aop.order.aop.Pointcuts.allOrderAndService()")
+    public void doBefore(JoinPoint joinPoint) {
+        log.info("[@Before] {}", joinPoint.getSignature());
+    }
+
+    @AfterReturning(value = "hello.aop.order.aop.Pointcuts.allOrderAndService()", returning = "result")
+    public void doReturn(JoinPoint joinPoint, Object result) {
+        log.info("[@AfterReturning] {} return={}", joinPoint.getSignature(), result);
+    }
+
+    @AfterThrowing(value = "hello.aop.order.aop.Pointcuts.allOrderAndService()", throwing = "ex")
+    public void doThrowing(JoinPoint joinPoint, Exception ex) {
+        log.info("[@AfterThrowing] {} message={}", ex, ex.getMessage());
+    }
+
+    @After(value = "hello.aop.order.aop.Pointcuts.allOrderAndService()")
+    public void doAfter(JoinPoint joinPoint) {
+        log.info("[@After] {}", joinPoint.getSignature());
+    }
+}
+
+```
